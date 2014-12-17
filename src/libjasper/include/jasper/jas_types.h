@@ -151,6 +151,7 @@ typedef signed char int_fast8_t;
 /**********/
 #if !defined(UINT_FAST8_MAX)
 typedef unsigned char uint_fast8_t;
+#define UINT_FAST8_MIN	0
 #define UINT_FAST8_MAX	255
 #endif
 /**********/
@@ -162,6 +163,7 @@ typedef short int_fast16_t;
 /**********/
 #if !defined(UINT_FAST16_MAX)
 typedef unsigned short uint_fast16_t;
+#define UINT_FAST16_MIN	USHRT_MIN
 #define UINT_FAST16_MAX	USHRT_MAX
 #endif
 /**********/
@@ -173,6 +175,7 @@ typedef int int_fast32_t;
 /**********/
 #if !defined(UINT_FAST32_MAX)
 typedef unsigned int uint_fast32_t;
+#define UINT_FAST32_MIN	UINT_MIN
 #define UINT_FAST32_MAX	UINT_MAX
 #endif
 /**********/
@@ -184,6 +187,7 @@ typedef longlong int_fast64_t;
 /**********/
 #if !defined(UINT_FAST64_MAX)
 typedef ulonglong uint_fast64_t;
+#define UINT_FAST64_MIN	ULLONG_MIN
 #define UINT_FAST64_MAX	ULLONG_MAX
 #endif
 /**********/

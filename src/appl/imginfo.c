@@ -85,7 +85,8 @@ typedef enum {
 	OPT_HELP,
 	OPT_VERSION,
 	OPT_VERBOSE,
-	OPT_INFILE
+	OPT_INFILE,
+	OPT_XCSOAR
 } optid_t;
 
 /******************************************************************************\
@@ -103,6 +104,7 @@ static jas_opt_t opts[] = {
 	{OPT_HELP, "help", 0},
 	{OPT_VERSION, "version", 0},
 	{OPT_VERBOSE, "verbose", 0},
+	{OPT_XCSOAR, "xcsoar", 0},
 	{OPT_INFILE, "f", JAS_OPT_HASARG},
 	{-1, 0, 0}
 };
@@ -112,6 +114,8 @@ static char *cmdname = 0;
 /******************************************************************************\
 * Main program.
 \******************************************************************************/
+
+extern bool jas_rtc_GetInitialised();
 
 int main(int argc, char **argv)
 {
@@ -126,6 +130,7 @@ int main(int argc, char **argv)
 	int numcmpts;
 	int verbose;
 	char *fmtname;
+	bool xcsoar = false;
 
 	if (jas_init()) {
 		abort();
@@ -139,6 +144,9 @@ int main(int argc, char **argv)
 	/* Parse the command line options. */
 	while ((id = jas_getopt(argc, argv, opts)) >= 0) {
 		switch (id) {
+		case OPT_XCSOAR:
+		  xcsoar = 1;
+		  break;
 		case OPT_VERBOSE:
 			verbose = 1;
 			break;
@@ -178,6 +186,9 @@ int main(int argc, char **argv)
 	/* Decode the image. */
 	if (!(image = jas_image_decode(instream, fmtid, 0))) {
 		fprintf(stderr, "cannot load image\n");
+		if (jas_rtc_GetInitialised()) {
+		  fprintf(stdout, "initialised xcsoar\n");
+		}
 		return EXIT_FAILURE;
 	}
 

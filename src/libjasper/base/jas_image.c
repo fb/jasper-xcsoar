@@ -233,8 +233,8 @@ jas_image_t *jas_image_copy(jas_image_t *image)
 	jas_image_setbbox(newimage);
 
 	if (image->cmprof_) {
-		if (!(newimage->cmprof_ = jas_cmprof_copy(image->cmprof_)))
-			goto error;
+	  if (!(newimage->cmprof_ = jas_cmprof_copy(image->cmprof_)))
+	    goto error;
 	}
 
 	return newimage;
@@ -296,16 +296,16 @@ void jas_image_destroy(jas_image_t *image)
   if ( (image->aux_buf.size != 0) && (image->aux_buf.buf != NULL) )
   jas_free(image->aux_buf.buf);
 
-	if (image->cmpts_) {
-		for (i = 0; i < image->numcmpts_; ++i) {
-			jas_image_cmpt_destroy(image->cmpts_[i]);
-			image->cmpts_[i] = 0;
-		}
-		jas_free(image->cmpts_);
-	}
-	if (image->cmprof_)
-		jas_cmprof_destroy(image->cmprof_);
-	jas_free(image);
+  if (image->cmpts_) {
+    for (i = 0; i < image->numcmpts_; ++i) {
+      jas_image_cmpt_destroy(image->cmpts_[i]);
+      image->cmpts_[i] = 0;
+    }
+    jas_free(image->cmpts_);
+  }
+  if (image->cmprof_)
+    jas_cmprof_destroy(image->cmprof_);
+  jas_free(image);
 }
 
 static jas_image_cmpt_t *jas_image_cmpt_create(uint_fast32_t tlx, uint_fast32_t tly,
@@ -387,6 +387,7 @@ jas_image_t *jas_image_decode(jas_stream_t *in, int fmt, char *optstr)
 	/* Create a color profile if needed. */
 	if (!jas_clrspc_isunknown(image->clrspc_) &&
 	  !jas_clrspc_isgeneric(image->clrspc_) && !image->cmprof_) {
+	  // JMW memory leak here!
 		if (!(image->cmprof_ =
 		  jas_cmprof_createfromclrspc(jas_image_clrspc(image))))
 			goto error;
@@ -467,8 +468,11 @@ int jas_image_readcmpt(jas_image_t *image, int cmptno, jas_image_coord_t x,
 	return 0;
 }
 
-int jas_image_writecmpt(jas_image_t *image, int cmptno, jas_image_coord_t x, jas_image_coord_t y, jas_image_coord_t width,
-  jas_image_coord_t height, jas_matrix_t *data)
+int jas_image_writecmpt(jas_image_t *image, int cmptno, 
+			jas_image_coord_t x, jas_image_coord_t y, 
+			jas_image_coord_t width,
+			jas_image_coord_t height, 
+			jas_matrix_t *data)
 {
 	jas_image_cmpt_t *cmpt;
 	jas_image_coord_t i;
@@ -498,22 +502,22 @@ int jas_image_writecmpt(jas_image_t *image, int cmptno, jas_image_coord_t x, jas
 	dr = jas_matrix_getref(data, 0, 0);
 	drs = jas_matrix_rowstep(data);
 	for (i = 0; i < height; ++i, dr += drs) {
-		d = dr;
-		if (jas_stream_seek(cmpt->stream_, (cmpt->width_ * (y + i) + x)
-		  * cmpt->cps_, SEEK_SET) < 0) {
-			return -1;
-		}
-		for (j = width; j > 0; --j, ++d) {
-			v = inttobits(*d, cmpt->prec_, cmpt->sgnd_);
-			for (k = cmpt->cps_; k > 0; --k) {
-				c = (v >> (8 * (cmpt->cps_ - 1))) & 0xff;
-				if (jas_stream_putc(cmpt->stream_,
+	  d = dr;
+	  if (jas_stream_seek(cmpt->stream_, (cmpt->width_ * (y + i) + x)
+			      * cmpt->cps_, SEEK_SET) < 0) {
+	    return -1;
+	  }
+	  for (j = width; j > 0; --j, ++d) {
+	    v = inttobits(*d, cmpt->prec_, cmpt->sgnd_);
+	    for (k = cmpt->cps_; k > 0; --k) {
+	      c = (v >> (8 * (cmpt->cps_ - 1))) & 0xff;
+	      if (jas_stream_putc(cmpt->stream_,
 				  (unsigned char) c) == EOF) {
-					return -1;
-				}
-				v <<= 8;
-			}
-		}
+		return -1;
+	      }
+	      v <<= 8;
+	    }
+	  }
 	}
 
 	return 0;

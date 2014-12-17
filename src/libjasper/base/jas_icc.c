@@ -70,6 +70,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 #define	jas_iccputuint8(out, val)	jas_iccputuint(out, 1, val)
 #define	jas_iccputuint16(out, val)	jas_iccputuint(out, 2, val)
@@ -224,7 +225,7 @@ jas_iccprof_t *jas_iccprof_copy(jas_iccprof_t *prof)
 {
 	jas_iccprof_t *newprof;
 	newprof = 0;
-	if (!(newprof = jas_iccprof_create()))
+	if (!(newprof = jas_iccprof_create())) // JMW memory leak 2
 		goto error;
 	newprof->hdr = prof->hdr;
 	newprof->tagtab.numents = 0;
@@ -272,7 +273,7 @@ jas_iccprof_t *jas_iccprof_load(jas_stream_t *in)
 	prof = 0;
 	attrval = 0;
 
-	if (!(prof = jas_iccprof_create())) {
+	if (!(prof = jas_iccprof_create())) { // JMW memleak 1
 		goto error;
 	}
 
@@ -1188,8 +1189,13 @@ static int jas_icctxt_copy(jas_iccattrval_t *attrval,
 {
 	jas_icctxt_t *txt = &attrval->data.txt;
 	jas_icctxt_t *othtxt = &othattrval->data.txt;
+#ifdef _WIN32
+	if (!(txt->string = _strdup(othtxt->string)))
+		return -1;
+#else
 	if (!(txt->string = strdup(othtxt->string)))
 		return -1;
+#endif
 	return 0;
 }
 

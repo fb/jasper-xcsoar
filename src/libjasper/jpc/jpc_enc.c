@@ -65,6 +65,11 @@
  * $Id$
  */
 
+extern double global_gtiff_xmin;
+extern double global_gtiff_xmax;
+extern double global_gtiff_ymin;
+extern double global_gtiff_ymax;
+
 /******************************************************************************\
 * Includes.
 \******************************************************************************/
@@ -212,7 +217,12 @@ typedef enum {
 	OPT_NUMGBITS,
 	OPT_RATE,
 	OPT_ILYRRATES,
-	OPT_JP2OVERHEAD
+	OPT_JP2OVERHEAD,
+	OPT_XCSOAR,
+	OPT_LATMIN,
+	OPT_LATMAX,
+	OPT_LONMIN,
+	OPT_LONMAX
 } optid_t;
 
 jas_taginfo_t encopts[] = {
@@ -243,6 +253,11 @@ jas_taginfo_t encopts[] = {
 	{OPT_RATE, "rate"},
 	{OPT_ILYRRATES, "ilyrrates"},
 	{OPT_JP2OVERHEAD, "_jp2overhead"},
+	{OPT_LONMIN, "lonmin"},
+	{OPT_LONMAX, "lonmax"},
+	{OPT_LATMIN, "latmin"},
+	{OPT_LATMAX, "latmax"},
+	{OPT_XCSOAR, "xcsoar"},
 	{-1, 0}
 };
 
@@ -387,6 +402,14 @@ static jpc_enc_cp_t *cp_create(char *optstr, jas_image_t *image)
 	cp->tilewidth = 0;
 	cp->tileheight = 0;
 	cp->numcmpts = jas_image_numcmpts(image);
+
+	// JMW
+	cp->xcsoar_mode = 0;
+	cp->lon_min = 0;
+	cp->lon_max = 0;
+	cp->lat_min = 0;
+	cp->lat_max = 0;
+
 
 	hsteplcm = 1;
 	vsteplcm = 1;
@@ -551,6 +574,30 @@ static jpc_enc_cp_t *cp_create(char *optstr, jas_image_t *image)
 		case OPT_JP2OVERHEAD:
 			jp2overhead = atoi(jas_tvparser_getval(tvp));
 			break;
+
+		case OPT_LATMIN:
+		  cp->xcsoar_mode = 1;
+		  cp->lat_min = atof(jas_tvparser_getval(tvp));
+		  break;
+		case OPT_LATMAX:
+		  cp->xcsoar_mode = 1;
+		  cp->lat_max = atof(jas_tvparser_getval(tvp));
+		  break;
+		case OPT_LONMIN:
+		  cp->xcsoar_mode = 1;
+		  cp->lon_min = atof(jas_tvparser_getval(tvp));
+		  break;
+		case OPT_LONMAX:
+		  cp->xcsoar_mode = 1;
+		  cp->lon_max = atof(jas_tvparser_getval(tvp));
+		case OPT_XCSOAR:
+		  cp->xcsoar_mode = 1;
+		  cp->lon_max = global_gtiff_xmax;
+		  cp->lon_min = global_gtiff_xmin;
+		  cp->lat_max = global_gtiff_ymin;
+		  cp->lat_min = global_gtiff_ymax;
+		  break;
+
 		default:
 			fprintf(stderr, "warning: ignoring invalid option %s\n",
 			 jas_tvparser_gettag(tvp));
@@ -894,8 +941,8 @@ static int jpc_enc_encodemainhdr(jpc_enc_t *enc)
 	jpc_cod_t *cod;
 	jpc_qcd_t *qcd;
 	int i;
-long startoff;
-long mainhdrlen;
+	long startoff;
+	long mainhdrlen;
 	jpc_enc_cp_t *cp;
 	jpc_qcc_t *qcc;
 	jpc_enc_tccp_t *tccp;
@@ -915,7 +962,7 @@ long mainhdrlen;
 
 	cp = enc->cp;
 
-startoff = jas_stream_getrwcount(enc->out);
+	startoff = jas_stream_getrwcount(enc->out);
 
 	/* Write SOC marker segment. */
 	if (!(enc->mrk = jpc_ms_create(JPC_MS_SOC))) {
@@ -961,7 +1008,14 @@ startoff = jas_stream_getrwcount(enc->out);
 	if (!(enc->mrk = jpc_ms_create(JPC_MS_COM))) {
 		return -1;
 	}
-	sprintf(buf, "Creator: GeoJasPer %s JasPer %s", GJAS_VERSION, jas_getversion());
+
+	// JMW
+	if (cp->xcsoar_mode) {
+	  sprintf(buf, "Creator: GeoJasPer %s JasPer %s XCSoar %f %f %f %f", GJAS_VERSION, jas_getversion(),
+		  cp->lon_min, cp->lon_max, cp->lat_min, cp->lat_max);
+	} else {
+	  sprintf(buf, "Creator: GeoJasPer %s JasPer %s XCSoar", GJAS_VERSION, jas_getversion());
+	}
 	com = &enc->mrk->parms.com;
 	com->len = strlen(buf);
 	com->regid = JPC_COM_LATIN;
@@ -1126,14 +1180,15 @@ static int jpc_enc_encodemainbody(jpc_enc_t *enc)
 	int samestepsizes;
 	jpc_enc_ccp_t *ccps;
 	jpc_enc_tccp_t *tccp;
-int bandno;
-uint_fast32_t x;
-uint_fast32_t y;
-int mingbits;
-int actualnumbps;
-jpc_fix_t mxmag;
-jpc_fix_t mag;
-int numgbits;
+
+	int bandno;
+	uint_fast32_t x;
+	uint_fast32_t y;
+	int mingbits;
+	int actualnumbps;
+	jpc_fix_t mxmag;
+	jpc_fix_t mag;
+	int numgbits;
 
 	cp = enc->cp;
 

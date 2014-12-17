@@ -367,7 +367,9 @@ jas_stream_t *jas_stream_tmpfile()
 	stream->obj_ = obj;
 
 	/* Choose a file name. */
+#ifndef WIN32
 	tmpnam(obj->pathname);
+#endif
 
 	/* Open the underlying file. */
 	if ((obj->fd = open(obj->pathname, O_CREAT | O_EXCL | O_RDWR | O_TRUNC | O_BINARY,
@@ -383,8 +385,8 @@ jas_stream_t *jas_stream_tmpfile()
 	For example, under Microsoft Windows the unlink operation will fail,
 	since the file is open. */
 	if (unlink(obj->pathname)) {
-		/* We will try unlinking the file again after it is closed. */
-		obj->flags |= JAS_STREAM_FILEOBJ_DELONCLOSE;
+	  /* We will try unlinking the file again after it is closed. */
+	  obj->flags |= JAS_STREAM_FILEOBJ_DELONCLOSE;
 	}
 
 	/* Use full buffering. */
@@ -421,7 +423,7 @@ jas_stream_t *jas_stream_fdopen(int fd, const char *mode)
 	  shells often open files in text mode when I/O redirection is
 	  used.  Grr... */
 	if (stream->openmode_ & JAS_STREAM_BINARY) {
-		setmode(fd, O_BINARY);
+		_setmode(fd, O_BINARY);
 	}
 #endif
 

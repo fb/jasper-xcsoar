@@ -98,6 +98,9 @@ libjpc_la_SOURCES = \
 	jpc_t2cod.c \
 	jpc_t2dec.c \
 	jpc_t2enc.c \
-	jpc_util.c
+	jpc_util.c \
+	jpc_rtc.cpp \
+	RasterTile.cpp
+
 
 INCLUDES = -I$(top_srcdir)/src/libjasper/include

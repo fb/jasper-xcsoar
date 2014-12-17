@@ -448,8 +448,15 @@ const char *GTIFDecToDDec( double dfAngle, const char * pszAxis, int nPrecision 
 } 
 
 
+// JMW need something like this
 // Report the file(s) corner coordinates in projected coordinates, and
 // if possible lat/long.
+
+static void GTIFGetACorner( GTIF *gtif,
+			    double *x, double *y) {
+  GTIFImageToPCS( gtif, x, y );
+}
+
 static int GTIFReportACorner( GTIF *gtif, GTIFDefn *defn, FILE * fp_out,
                               const char * corner_name,
                               double x, double y, int inv_flag, int dec_flag )
@@ -507,6 +514,11 @@ static int GTIFReportACorner( GTIF *gtif, GTIFDefn *defn, FILE * fp_out,
     return TRUE;
 } 
 
+double global_gtiff_xmin = 0;
+double global_gtiff_xmax = 0;
+double global_gtiff_ymin = 0;
+double global_gtiff_ymax = 0;
+
 static void GTIFPrintCorners( GTIF *gtif, GTIFDefn *defn, FILE * fp_out,
                               int xsize, int ysize, int inv_flag, int dec_flag )
                              
@@ -518,6 +530,10 @@ static void GTIFPrintCorners( GTIF *gtif, GTIFDefn *defn, FILE * fp_out,
         printf( " ... unable to transform points between pixel/line and PCS space\n" );
         return;
     }
+    
+    global_gtiff_xmin = 0;
+    global_gtiff_ymin = 0;
+    GTIFGetACorner(gtif, &global_gtiff_xmin, &global_gtiff_ymin);
   
     GTIFReportACorner( gtif, defn, fp_out, "Lower Left", 0.0, ysize, 
                        inv_flag, dec_flag );
@@ -527,6 +543,10 @@ static void GTIFPrintCorners( GTIF *gtif, GTIFDefn *defn, FILE * fp_out,
                        inv_flag, dec_flag );
     GTIFReportACorner( gtif, defn, fp_out, "Center", xsize/2.0, ysize/2.0,
                        inv_flag, dec_flag );
+
+    global_gtiff_xmax = xsize;
+    global_gtiff_ymax = ysize;
+    GTIFGetACorner(gtif, &global_gtiff_xmax, &global_gtiff_ymax);
 }
 
 

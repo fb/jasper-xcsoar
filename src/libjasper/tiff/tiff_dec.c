@@ -821,6 +821,10 @@ static int read_generic_RGBA_tiff(TIFF *tif, jas_matrix_t *cmpts[], jas_image_t 
 /******************************************************************************\
 * Interface functions.
 \******************************************************************************/
+extern double global_gtiff_xmin;
+extern double global_gtiff_xmax;
+extern double global_gtiff_ymin;
+extern double global_gtiff_ymax;
 
 jas_image_t *tiff_decode(jas_stream_t *in, char *optstr)
 {
@@ -938,6 +942,11 @@ jas_image_t *tiff_decode(jas_stream_t *in, char *optstr)
   MemBufFromGTIF ( tif, &image->aux_buf.size, &image->aux_buf.buf );
   if (isGeoTiff(tif) == TRUE)
     fprintf(stdout, "GeoTiff found, size: %d\n", image->aux_buf.size);
+
+  // JMW
+  GTIFPrintFull( tif );
+  fprintf(stdout, "Corners %f %f %f %f\n", global_gtiff_xmin, global_gtiff_ymin,
+	  global_gtiff_xmax, global_gtiff_ymax);
 
   // try to read TFW file if exists - this will override GeoTiff information
   getTFWFileName(fo->pathname, tfwName);

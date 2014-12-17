@@ -389,8 +389,8 @@ int jp2_encode(jas_image_t *image, jas_stream_t *out, char *optstr)
   jp2_box_t *uuid_box = NULL;
   
   if (jp2_write_header(image, out) < 0)
-		return -1;
-
+    return -1;
+  
   // write UUID if received, dima
   if ( (image->aux_buf.size > 0) && (image->aux_buf.buf != NULL) )
   {
@@ -400,33 +400,33 @@ int jp2_encode(jas_image_t *image, jas_stream_t *out, char *optstr)
     uuid_box->data.uuid.data_len = image->aux_buf.size;
     uuid_box->data.uuid.data = (uint_fast8_t *)jas_malloc( image->aux_buf.size );
     memcpy( uuid_box->data.uuid.data, image->aux_buf.buf, image->aux_buf.size );
-  
+    
     if (uuid_box) {
-		  if (jp2_box_put(uuid_box, out))
-			  return -1;
+      if (jp2_box_put(uuid_box, out))
+	return -1;
     }
-	}
+  }
   // write UUID if received, dima
-
-	if (jp2_write_codestream(image, out, optstr) < 0)
-		return -1;
-
-	return 0;
+  
+  if (jp2_write_codestream(image, out, optstr) < 0)
+    return -1;
+  
+  return 0;
 }
 
 int jp2_encode_uuid(jas_image_t *image, jas_stream_t *out,
 		    char *optstr, jp2_box_t *uuid)
 {
-	if (jp2_write_header(image, out) < 0)
-		return -1;
-	if (uuid) {
-		if (jp2_box_put(uuid, out))
-			return -1;
-	}
-	if (jp2_write_codestream(image, out, optstr) < 0)
-		return -1;
-
-	return 0;
+  if (jp2_write_header(image, out) < 0)
+    return -1;
+  if (uuid) {
+    if (jp2_box_put(uuid, out))
+      return -1;
+  }
+  if (jp2_write_codestream(image, out, optstr) < 0)
+    return -1;
+  
+  return 0;
 }
 
 static uint_fast32_t jp2_gettypeasoc(int colorspace, int ctype)

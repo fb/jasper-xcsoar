@@ -166,5 +166,5 @@ int jas_init()
 
 void jas_cleanup()
 {
-	jas_image_clearfmts();
+  jas_image_clearfmts();
 }

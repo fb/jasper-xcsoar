@@ -618,9 +618,11 @@ if (bufsize > QMFB_JOINBUFSIZE_BATCH) {
 		}
 		n = llen - (llen >> 1);
 		while (n-- > 0) {
-			*(jpc_batch_t*)ptr = *(jpc_batch_t*)lptr;
-			ptr -= twostep;
-			lptr -= step;
+		  if (ptr != lptr) {
+		    *(jpc_batch_t*)ptr = *(jpc_batch_t*)lptr;
+		  }
+		  ptr -= twostep;
+		  lptr -= step;
 		}
 		/* Copy the appropriate samples into the second phase of
 		  the output signal (corresponding to odd indexed
@@ -634,7 +636,9 @@ if (bufsize > QMFB_JOINBUFSIZE_BATCH) {
 				--tmpptr;
 				*(jpc_batch_t*)ptr = *tmpptr;
 			} else {
-				*(jpc_batch_t*)ptr = *(jpc_batch_t*)hptr;
+			  if (ptr != hptr) {
+			    *(jpc_batch_t*)ptr = *(jpc_batch_t*)hptr;
+			  }
 			}
 			hptr += step;
 			ptr += twostep;

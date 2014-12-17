@@ -154,18 +154,18 @@ jas_cmprof_t *jas_cmprof_createfromclrspc(int clrspc)
 			goto error;
 		break;
 	default:
-		if (!(iccprof = jas_iccprof_createfromclrspc(clrspc)))
-			goto error;
-		if (!(prof = jas_cmprof_createfromiccprof(iccprof)))
-			goto error;
-#if 0
-		jas_iccprof_destroy(iccprof);
+	  if (!(iccprof = jas_iccprof_createfromclrspc(clrspc))) 
+	    goto error;
+	  if (!(prof = jas_cmprof_createfromiccprof(iccprof))) // JMW memory leak?
+	    goto error;
+#if 1 // JMW memory leak fixed... iccprof is copied inside jas_cmprof_createfromiccprof
+	  jas_iccprof_destroy(iccprof);
 #else
-		prof->iccprof = iccprof;
+	  prof->iccprof = iccprof;
 #endif
-		if (!jas_clrspc_isgeneric(clrspc))
-			prof->clrspc = clrspc;
-		break;
+	  if (!jas_clrspc_isgeneric(clrspc))
+	    prof->clrspc = clrspc;
+	  break;
 	}
 	return prof;
 error:
@@ -253,7 +253,7 @@ jas_cmprof_t *jas_cmprof_createfromiccprof(jas_iccprof_t *iccprof)
 	if (!(prof = jas_cmprof_create()))
 		goto error;
 	jas_iccprof_gethdr(iccprof, &icchdr);
-	if (!(prof->iccprof = jas_iccprof_copy(iccprof)))
+	if (!(prof->iccprof = jas_iccprof_copy(iccprof))) // JMW memory leak 3
 		goto error;
 	prof->clrspc = icctoclrspc(icchdr.colorspc, 0);
 	prof->refclrspc = icctoclrspc(icchdr.refcolorspc, 1);
@@ -313,13 +313,13 @@ void jas_cmprof_destroy(jas_cmprof_t *prof)
 { 
 	int i;
 	for (i = 0; i < JAS_CMPROF_NUMPXFORMSEQS; ++i) {
-		if (prof->pxformseqs[i]) {
-			jas_cmpxformseq_destroy(prof->pxformseqs[i]);
-			prof->pxformseqs[i] = 0;
-		}
+	  if (prof->pxformseqs[i]) {
+	    jas_cmpxformseq_destroy(prof->pxformseqs[i]);
+	    prof->pxformseqs[i] = 0;
+	  }
 	}
 	if (prof->iccprof)
-		jas_iccprof_destroy(prof->iccprof);
+	  jas_iccprof_destroy(prof->iccprof);
 	jas_free(prof);
 }
 
@@ -548,7 +548,7 @@ int jas_cmxform_apply(jas_cmxform_t *xform, jas_cmpixmap_t *in, jas_cmpixmap_t *
 			bufptr = &outbuf[i];
 			dataptr = &fmt->buf[n];
 			for (j = 0; j < m; ++j) {
-				v = (*bufptr) * scale + bias;
+				v = (long)((*bufptr) * scale + bias);
 				bufptr += xform->numoutchans;
 				if (jas_cmputint(&dataptr, fmt->sgnd, fmt->prec, v))
 					goto error;
@@ -908,10 +908,10 @@ static jas_cmreal_t jas_cmshapmatlut_lookup(jas_cmshapmatlut_t *lut, jas_cmreal_
 	int lo;
 	int hi;
 	t = x * (lut->size - 1);
-	lo = floor(t);
+	lo = (int) floor(t);
 	if (lo < 0)
 		return lut->data[0];
-	hi = ceil(t);
+	hi = (int) ceil(t);
 	if (hi >= lut->size)
 		return lut->data[lut->size - 1];
 	return lut->data[lo] + (t - lo) * (lut->data[hi] - lut->data[lo]);

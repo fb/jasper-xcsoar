@@ -157,12 +157,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 install_sh = @install_sh@
 
-@HAVE_OPENGL_TRUE@BIN_JIV = jiv
-@HAVE_OPENGL_FALSE@BIN_JIV = 
-@HAVE_OPENGL_TRUE@EXTRA_JIV = 
-@HAVE_OPENGL_FALSE@EXTRA_JIV = jiv
-
-bin_PROGRAMS = geojasper jasper $(BIN_JIV) imgcmp imginfo
+bin_PROGRAMS = geojasper jasper jiv imgcmp imginfo
 EXTRA_PROGRAMS = $(EXTRA_JIV) dummy
 
 geojasper_SOURCES = geojasper.c
@@ -179,7 +174,7 @@ geojasper_LDADD = $(MYLDFLAGS)
 jasper_LDADD = $(MYLDFLAGS)
 imgcmp_LDADD = $(MYLDFLAGS)
 imginfo_LDADD = $(MYLDFLAGS)
-jiv_LDADD = $(MYLDFLAGS) $(OPENGL_LIBS)
+jiv_LDADD = $(MYLDFLAGS) -lglut
 dummy_LDADD = $(MYLDFLAGS)
 subdir = src/appl
 mkinstalldirs = $(SHELL) $(top_srcdir)/acaux/mkinstalldirs

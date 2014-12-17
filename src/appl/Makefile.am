@@ -56,13 +56,8 @@
 # 
 # __END_OF_JASPER_LICENSE__
 
-if HAVE_OPENGL
 BIN_JIV = jiv
 EXTRA_JIV =
-else
-BIN_JIV =
-EXTRA_JIV = jiv
-endif
 
 bin_PROGRAMS = geojasper jasper $(BIN_JIV) imgcmp imginfo
 EXTRA_PROGRAMS = $(EXTRA_JIV) dummy
@@ -81,5 +76,5 @@ geojasper_LDADD = $(MYLDFLAGS)
 jasper_LDADD = $(MYLDFLAGS)
 imgcmp_LDADD = $(MYLDFLAGS)
 imginfo_LDADD = $(MYLDFLAGS)
-jiv_LDADD = $(MYLDFLAGS) $(OPENGL_LIBS)
+jiv_LDADD = $(MYLDFLAGS) -lglut
 dummy_LDADD = $(MYLDFLAGS)

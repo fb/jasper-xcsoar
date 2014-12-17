@@ -233,6 +233,13 @@ int main(int argc, char **argv)
 	endclk = clock();
 	dectime = endclk - startclk;
 
+
+
+
+
+
+
+
 	/* If requested, throw away all of the components except one.
 	  Why might this be desirable?  It is a hack, really.
 	  None of the image formats other than the JPEG-2000 ones support

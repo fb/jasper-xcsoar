@@ -222,6 +222,8 @@ int main(int argc, char **argv)
 		abort();
 	}
 
+	jas_setdbglevel(1);
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_SINGLE);
 	glutCreateWindow(cmdname);

@@ -1408,6 +1408,7 @@ static int jpc_com_getparms(jpc_ms_t *ms, jpc_cstate_t *cstate, jas_stream_t *in
 	} else {
 		com->data = 0;
 	}
+
 	return 0;
 }
 
