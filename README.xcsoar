@@ -1,0 +1,4 @@
+./configure
+make
+
+Don't try to use autoconf etc. it seems some Makefiles where patched manually.
